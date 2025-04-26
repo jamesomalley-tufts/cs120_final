@@ -92,23 +92,3 @@ io.on('connection', (socket) => {
 server.listen(3000, () => {
   console.log('server running at http://localhost:3000');
 });
-
-
-
-
-
-
-
-
-//var query = "Explain how machine learning works in a few words";
-
-
-//async function main() {
-  //const response = await ai.models.generateContent({
-    //model: "gemini-2.0-flash",
-    //contents: query,
-  //});
-  //console.log(response.text);
-//}
-
-//await main();
