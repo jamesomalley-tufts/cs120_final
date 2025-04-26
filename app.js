@@ -4,17 +4,27 @@ import { createServer } from 'node:http';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { Server } from 'socket.io';
+import fs from "fs";
+
 
 // Set up for LLM w/ API KEY
+//import { Document } from "@langchain/core/documents";
+//import { ChatOpenAI } from "@langchain/openai";
+//import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import OpenAI from "openai";
 import dotenv from 'dotenv';
 dotenv.config();
-const openai = new OpenAI({
+const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY, // Environment variable, don't paste the full key directly here
 });
 
+//Trying the file upload info https://platform.openai.com/docs/guides/pdf-file
+const file = await client.files.create({
+    file: fs.createReadStream("doc2.pdf"),
+    purpose: "user_data",
+});
 
-
+// Core chat components https://socket.io/docs/v4/tutorial
 const app = express();
 const server = createServer(app);
 const io = new Server(server);
@@ -24,7 +34,6 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 app.get('/', (req, res) => {
   res.sendFile(join(__dirname, 'my_documents.html'));
 });
-// https://socket.io/docs/v4/tutorial
 io.on('connection', (socket) => {
   console.log('a user connected');
   socket.on('chat message', async (msg) => {
@@ -32,10 +41,32 @@ io.on('connection', (socket) => {
     io.emit('chat message', msg);
 
     try {
-      const response = await openai.responses.create({
-        model: 'gpt-4.1',
-        input: msg
+      // File input
+      const response = await client.responses.create({
+        model: 'gpt-4o-mini',
+        input : [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'input_file',
+                file_id: file.id,
+              },
+              {
+                type: 'input_text',
+                text: msg,
+              },
+            ],
+          },
+        ],
       });
+
+      console.log(response.output_text);
+      // Standard input
+      //const response = await client.responses.create({
+        //model: 'gpt-4.1',
+        //input: msg
+      //});
       console.log('Full LLM Response:', JSON.stringify(response, null, 2));
 
         if (response) {
