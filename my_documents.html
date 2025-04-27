@@ -1,121 +1,143 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>My Documents | Hoam.ai</title>
-    <link rel="stylesheet" href="style.css">
-   <!-- <script src="app.js" defer></script> -->
-  <style>
+//Functional imports for chat
+import express from 'express';
+import { createServer } from 'node:http';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+import { Server } from 'socket.io';
+import fs from "fs";
 
-  body { margin: 0; padding-bottom: 3rem; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-
-#form { background: rgba(0, 0, 0, 0.05); padding: 0.5rem; display: flex; border-radius: 8px }
-
-#input { padding: 0.5rem 1rem; flex-grow: 1; border-radius: 8px; margin-right: 0.5rem; box-shadow: 0 0 10px rgba(0,255,255,0.7) }
-
-#input:focus { outline: none; box-shadow: 0 0 20px rgba(0,255,255,1); }
-
-#form > button { background: #333; border: none; padding: 0 1rem; border-radius: 8px; color: #ffffff; font-weight: bolder }
-
-#messages {height: 400px; overflow-y: auto; border: 1px solid #ccc; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; background-color: #f9f9f9; box-shadow: 0 0 10px rgba(0,255,255,0.2); list-style-type: none; padding-left: 0 }
-#messages > li { padding: 0.5rem 1rem }
-#messages > li:nth-child(odd) { background: #efefef}
+//Functional imports for doc upload
+import fileUpload from "express-fileupload";
+import fetch from 'node-fetch';
 
 
-#logo {  width: 50px; }
+// Set up for LLM w/ API KEY
+//import { Document } from "@langchain/core/documents";
+//import { ChatOpenAI } from "@langchain/openai";
+//import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
+import OpenAI from "openai";
+import dotenv from 'dotenv';
+dotenv.config();
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY, // Environment variable, don't paste the full key directly here
+});
 
-.tools { display: flex; flex-direction: row; justify-content: center; align-items: flex-start; gap: 2rem; padding:2rem; flex-wrap: wrap;}
+// Core chat components https://socket.io/docs/v4/tutorial
+const app = express();
+const server = createServer(app);
+const io = new Server(server);
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
-.card {background: #ffffff; box-shadow: 0 4px 8px rgba(0,0,0,0.1); border-radius: 12px; padding: 2rem; max-width: 500px; width: 100%;}
+app.get('/', (req, res) => {
+  res.sendFile(join(__dirname, 'my_documents.html'));
+});
 
-#uploadDocument { flex: 1 }
+//Document Upload functionality
+app.use(fileUpload());
 
-#chat { flex: 2}
+app.post('/upload', function(req, res) {
+  let sampleFile;
+  let uploadPath;
 
-@media (max-width: 768px){
-  .content{
-    flex-direction: column;
-    align-items: center;
+  if (!req.files || Object.keys(req.files).length === 0) {
+    return res.status(400).send('No files were uploaded.');
   }
-}
-</style>
-</head>
-<body>
 
-<!-- Dark Mode Toggle Button -->
-<button onclick="toggleDarkMode()" style="position:fixed;top:10px;right:10px;">🌙 Toggle Dark Mode</button>
+// The name of the input field (i.e. "sampleFile") is used to retrieve the uploaded file
+  sampleFile = req.files.sampleFile;
+  uploadPath = __dirname + '/uploads/' + sampleFile.name;
 
-<!-- Modal for success/failure popups -->
-<div id="modal" onclick="closeModal()">
-    <div id="modalContent"></div>
-</div>
+  // Use the mv() method to place the file somewhere on your server
+  sampleFile.mv(uploadPath, function(err) {
+    if (err)
+      return res.status(500).send(err);
 
+    res.send('File uploaded!');
+  });
+});
 
-<header>
-    <div>Hoam.ai</div>
-    <nav>
-        <a href="index.html">Home</a>
-        <a href="about.html">Why Hoam.ai</a>
-        <a href="documents.html">My Documents</a>
-        <a href="login.html">Login</a>
-    </nav>
-</header>
-  <div class = "main">
-    <div class ="title" align="center">
-    <h1 align="center" size="xxx-large">My Documents</h1>
-    Ask questions based on your HOA's already uploaded documents or add your own to the chat.</div>
-    <div class = "tools">
-    <div id="uploadDocument" class="card">
-      <h2>Your HOA Documents</h2>
-      <h3>Uploaded Files</h3>
-      <ul id="fileList"></ul>
-      <!--<form ref='uploadForm'
-      id='uploadForm'
-      action='http://localhost:3000/upload'
-      method='post'
-      encType="multipart/form-data">
-        <input type="file" name="sampleFile" />
-        <input type='submit' value='Upload!' />
-    </form>-->
-      <input type="file" id="fileElem" multiple style="display: none" onchange="handleFiles(this.files)">
-      <label id="fileLabel" for="fileElem">Click to upload</label>
-    </div>
+let uploadPath;
+console.log(uploadPath)
 
-    <div id="chat" class="card">
-      <h2>Chat with Hoam.ai</h2>
-    <ul id="messages"></ul>
-<form id="form" action="">
-      <input id="input" autocomplete="on" /><button>Ask the AI</button>
-    </form>
-</div>
-    </div>
-</div>
-</div>
-<!-- Set up scripts -->
-<script src="/socket.io/socket.io.js"></script>
-    <script>
+//Trying the file upload info -- move and generalize later https://platform.openai.com/docs/guides/pdf-file
+const file = await client.files.create({
+    file: fs.createReadStream("SSR_TSRPT.pdf"),
+    //file: fs.createReadStream(uploadPath.toString()),
+    purpose: "user_data",
+});
 
-      const socket = io();
+// Chat functionality
+io.on('connection', (socket) => {
+  console.log('a user connected');
+  socket.on('chat message', async (msg) => {
+    const API_URL = "https://67a08egpff.execute-api.us-east-2.amazonaws.com/test/upload";
+    const API_KEY = "N0I50xLGdz9LmOpHw32th8aN0nLnhhxW1vKLG5Q5";
+    console.log('message:' + msg);
+    io.emit('chat message', "Me: " + msg);
 
-      const form = document.getElementById('form');
-      const input = document.getElementById('input');
-      const messages = document.getElementById('messages');
+    try {
+      //NOTE: Server-side implementation
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': API_KEY
+        },
+        body: JSON.stringify({query: msg})
+      });
 
-      form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        if (input.value) {
-          socket.emit('chat message', input.value);
-          input.value = '';
+      const data = await response.json();
+      console.log('API Response',data);
+      // NOTE: Client-side implementation with general LLM chat
+      //const response = await client.responses.create({
+        //model: 'gpt-4.1',
+        //input: msg
+      //});
+
+      // NOTE: Client-side implementation w/ file as input
+      //const response = await client.responses.create({
+        //model: 'gpt-4o-mini',
+        //input : [
+          //{
+            //role: 'user',
+            //content: [
+              //{
+                //type: 'input_file',
+                //file_id: file.id,
+              //},
+              //{
+               // type: 'input_text',
+                //text: msg,
+              //},
+            //],
+          //},
+        //],
+      //console.log(response.output_text);
+
+      //console.log('Full LLM Response:', JSON.stringify(response, null, 2));
+
+        if (response) {
+          //io.emit('chat message', "Hoam: " + response.output_text); // Emit LLM's response
+          io.emit('chat message', "Hoam: " + data.body); // sending back the response
+
+          //console.log('LLM response sent:', response.output_text);
+
+        } else {
+          io.emit('chat message', "The AI didn't provide a valid text response.");
         }
-      });
 
-      socket.on('chat message', (msg) => {
-        const item = document.createElement('li');
-        item.innerText = msg;
-        messages.appendChild(item);
-        //added to show LLM response
-        window.scrollTo(0, document.body.scrollHeight);
-      });
-    </script>
-</body>
-</html>
+      //io.emit('chat message', response.text());
+      //console.log('LLM response', response.text())
+      } catch (error) {
+      console.error("Error generating content" + error);
+      io.emit('chat message',"Error processing your request.")
+    }
+  });
+  socket.on('disconnect', () => {
+    console.log('user disconnected');
+  })
+});
+
+server.listen(3000, () => {
+  console.log('server running at http://localhost:3000');
+});
