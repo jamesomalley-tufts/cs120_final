@@ -1,10 +1,14 @@
-//Functional imports
+//Functional imports for chat
 import express from 'express';
 import { createServer } from 'node:http';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { Server } from 'socket.io';
 import fs from "fs";
+
+//Functional imports for doc upload
+import fileUpload from "express-fileupload";
+import fetch from 'node-fetch';
 
 
 // Set up for LLM w/ API KEY
@@ -18,60 +22,106 @@ const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY, // Environment variable, don't paste the full key directly here
 });
 
-//Trying the file upload info https://platform.openai.com/docs/guides/pdf-file
-const file = await client.files.create({
-    file: fs.createReadStream("doc2.pdf"),
-    purpose: "user_data",
-});
-
 // Core chat components https://socket.io/docs/v4/tutorial
 const app = express();
 const server = createServer(app);
 const io = new Server(server);
-
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 app.get('/', (req, res) => {
   res.sendFile(join(__dirname, 'my_documents.html'));
 });
+
+//Document Upload functionality
+app.use(fileUpload());
+
+app.post('/upload', function(req, res) {
+  let sampleFile;
+  let uploadPath;
+
+  if (!req.files || Object.keys(req.files).length === 0) {
+    return res.status(400).send('No files were uploaded.');
+  }
+
+// The name of the input field (i.e. "sampleFile") is used to retrieve the uploaded file
+  sampleFile = req.files.sampleFile;
+  uploadPath = __dirname + '/uploads/' + sampleFile.name;
+
+  // Use the mv() method to place the file somewhere on your server
+  sampleFile.mv(uploadPath, function(err) {
+    if (err)
+      return res.status(500).send(err);
+
+    res.send('File uploaded!');
+  });
+});
+
+let uploadPath;
+console.log(uploadPath)
+
+//Trying the file upload info -- move and generalize later https://platform.openai.com/docs/guides/pdf-file
+const file = await client.files.create({
+    file: fs.createReadStream("SSR_TSRPT.pdf"),
+    //file: fs.createReadStream(uploadPath.toString()),
+    purpose: "user_data",
+});
+
+// Chat functionality
 io.on('connection', (socket) => {
   console.log('a user connected');
   socket.on('chat message', async (msg) => {
+    const API_URL = "https://67a08egpff.execute-api.us-east-2.amazonaws.com/test/upload";
+    const API_KEY = "N0I50xLGdz9LmOpHw32th8aN0nLnhhxW1vKLG5Q5";
     console.log('message:' + msg);
-    io.emit('chat message', msg);
+    io.emit('chat message', "Me: " + msg);
 
     try {
-      // File input
-      const response = await client.responses.create({
-        model: 'gpt-4o-mini',
-        input : [
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'input_file',
-                file_id: file.id,
-              },
-              {
-                type: 'input_text',
-                text: msg,
-              },
-            ],
-          },
-        ],
+      //NOTE: Server-side implementation
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': API_KEY
+        },
+        body: JSON.stringify({query: msg})
       });
 
-      console.log(response.output_text);
-      // Standard input
+      const data = await response.json();
+      console.log('API Response',data);
+      // NOTE: Client-side implementation with general LLM chat
       //const response = await client.responses.create({
         //model: 'gpt-4.1',
         //input: msg
       //});
-      console.log('Full LLM Response:', JSON.stringify(response, null, 2));
+
+      // NOTE: Client-side implementation w/ file as input
+      //const response = await client.responses.create({
+        //model: 'gpt-4o-mini',
+        //input : [
+          //{
+            //role: 'user',
+            //content: [
+              //{
+                //type: 'input_file',
+                //file_id: file.id,
+              //},
+              //{
+               // type: 'input_text',
+                //text: msg,
+              //},
+            //],
+          //},
+        //],
+      //console.log(response.output_text);
+
+      //console.log('Full LLM Response:', JSON.stringify(response, null, 2));
 
         if (response) {
-          io.emit('chat message', response.output_text); // Emit LLM's response
-          console.log('LLM response sent:', response.output_text);
+          //io.emit('chat message', "Hoam: " + response.output_text); // Emit LLM's response
+          io.emit('chat message', "Hoam: " + data.results); // sending back the response
+
+          //console.log('LLM response sent:', response.output_text);
+
         } else {
           io.emit('chat message', "The AI didn't provide a valid text response.");
         }
@@ -80,7 +130,6 @@ io.on('connection', (socket) => {
       //console.log('LLM response', response.text())
       } catch (error) {
       console.error("Error generating content" + error);
-      console.error("Result object on error:", JSON.stringify(result, null, 2)); // Log the result even in error
       io.emit('chat message',"Error processing your request.")
     }
   });
