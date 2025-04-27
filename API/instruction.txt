@@ -25,8 +25,8 @@ API Key: (x-api-key: N0I50xLGdz9LmOpHw32th8aN0nLnhhxW1vKLG5Q5)
 API 2: User Questions (https://rgo89zwyke.execute-api.us-east-2.amazonaws.com/dev/ask)
 API Key: (x-api-key: API_KEY = "MqwABFGNhC4FF1Kqu2otv7ElRos1DbuS1FCkfuJx")
 
-1. User Question (POST url)**: Sends a question to the server and retrieves an answer.
+1. User Question (POST url)**: Sends a question to the server and get Top 3 similar results retrieved from knowledge base.
     **Headers**: `Content-Type: application/json`
     **Body**: JSON `{"query": "questions"}`
-    **Response**: On success, returns status code `200 OK`, response body is JSON `{"answer": ""}`. On error, returns `4xx` or `5xx` status code, response body is a JSON error message.
+    **Response**: On success, returns status code `200 OK`, response body is JSON `{"results": "Top 3 similar results retrieved from knowledge base"}`. On error, returns `4xx` or `5xx` status code, response body is a JSON error message.
 	
