@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register | Hoam.ai</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="app.js" defer></script>
+</head>
+<body>
+
+<!-- Dark Mode Toggle Button -->
+<button onclick="toggleDarkMode()" style="position:fixed;top:10px;right:10px;">🌙 Toggle Dark Mode</button>
+
+<!-- Modal for success/failure popups -->
+<div id="modal" onclick="closeModal()">
+    <div id="modalContent"></div>
+</div>
+
+<header>
+    <div>Hoam.ai</div>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="about.html">Why Hoam.ai</a>
+        <a href="documents.html">My Documents</a>
+        <a href="login.html">Login</a>
+    </nav>
+</header>
+
+<div class="container">
+    <h1>Create an Account</h1>
+
+    <form onsubmit="handleRegister(event)">
+        <input type="text" name="name" placeholder="Name" required>
+        <input type="email" name="email" placeholder="Email" required>
+        <input type="text" name="address" placeholder="Address" required>
+        <select name="hoa" required>
+            <option value="">Select Your HOA</option>
+            <option value="HOA A">HOA A</option>
+            <option value="HOA B">HOA B</option>
+            <option value="Add New HOA">Add New HOA</option>
+        </select>
+        <label><input type="checkbox" name="newsletter"> Yes! I want to learn more from Hoam.ai</label>
+        <button type="submit">Create an Account</button>
+    </form>
+
+</div>
+
+</body>
+</html>

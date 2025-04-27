@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login | Hoam.ai</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="app.js" defer></script>
+</head>
+<body>
+
+<!-- Dark Mode Toggle Button -->
+<button onclick="toggleDarkMode()" style="position:fixed;top:10px;right:10px;">🌙 Toggle Dark Mode</button>
+
+<!-- Modal for success/failure popups -->
+<div id="modal" onclick="closeModal()">
+    <div id="modalContent"></div>
+</div>
+
+<header>
+    <div>Hoam.ai</div>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="about.html">Why Hoam.ai</a>
+        <a href="documents.html">My Documents</a>
+        <a href="login.html">Login</a>
+    </nav>
+</header>
+
+<div class="container">
+    <h1>Login</h1>
+
+    <form onsubmit="handleLogin(event)">
+        <input type="email" name="email" placeholder="Email" required>
+        <input type="password" placeholder="Password" required> <!-- Password field just for display -->
+        <button type="submit">Login</button>
+    </form>
+
+</div>
+
+</body>
+</html>

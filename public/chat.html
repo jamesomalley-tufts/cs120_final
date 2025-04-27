@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat | Hoam.ai</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="/socket.io/socket.io.js"></script> <!-- socket.io client -->
+    <script src="app.js" defer></script>
+</head>
+<body onload="initializeChat()">
+
+<!-- Dark Mode Toggle Button -->
+<button onclick="toggleDarkMode()" style="position:fixed;top:10px;right:10px;">🌙 Toggle Dark Mode</button>
+
+<!-- Modal for success/failure popups -->
+<div id="modal" onclick="closeModal()">
+    <div id="modalContent"></div>
+</div>
+
+<header>
+    <div>Hoam.ai</div>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="about.html">Why Hoam.ai</a>
+        <a href="documents.html">My Documents</a>
+        <a href="login.html">Login</a>
+    </nav>
+</header>
+
+<div class="container">
+    <h1>Chat Room</h1>
+
+    <div id="chatBox" class="chat-box">
+        <!-- Messages will appear here -->
+    </div>
+
+    <div class="chat-input">
+        <input id="chatInput" type="text" placeholder="Type a message..." required>
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+</div>
+
+</body>
+</html>
