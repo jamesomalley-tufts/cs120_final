@@ -69,7 +69,6 @@
       <h2>Your HOA Documents</h2>
       <h3>Uploaded Files</h3>
       <ul id="listFiles"></ul>
-
       <!--<form ref='uploadForm'
       id='uploadForm'
       action='http://localhost:3000/upload'
@@ -79,7 +78,7 @@
         <input type='submit' value='Upload!' />
     </form>-->
       <input type="file" id="fileElem" multiple style="display: none" onchange="handleFiles(this.files)">
-      <label id="fileLabel" for="fileElem">Click to upload</label>
+      <label id="fileLabel" for="fileElem" onclick="uploadFile()">Click to upload</label>
     </div>
 
     <div id="chat" class="card">
