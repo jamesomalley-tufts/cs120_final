@@ -60,8 +60,7 @@ app.post('/upload', function(req, res) {
 let uploadPath;
 console.log(uploadPath)
 
-//Trying the file upload info -- move and generalize later https://platform.openai.com/docs/guides/pdf-file
-
+//Trying the file upload info 
 const DOC_API_KEY = "N0I50xLGdz9LmOpHw32th8aN0nLnhhxW1vKLG5Q5"
 const DOC_API_URL = "https://67a08egpff.execute-api.us-east-2.amazonaws.com/test/upload?action=list"
 
