@@ -9,6 +9,7 @@ import fs from "fs";
 //Functional imports for doc upload
 import fileUpload from "express-fileupload";
 import fetch from 'node-fetch';
+import axios from 'axios';
 
 
 // Set up for LLM w/ API KEY
@@ -60,18 +61,41 @@ let uploadPath;
 console.log(uploadPath)
 
 //Trying the file upload info -- move and generalize later https://platform.openai.com/docs/guides/pdf-file
-const file = await client.files.create({
-    file: fs.createReadStream("SSR_TSRPT.pdf"),
-    //file: fs.createReadStream(uploadPath.toString()),
-    purpose: "user_data",
+
+const DOC_API_KEY = "N0I50xLGdz9LmOpHw32th8aN0nLnhhxW1vKLG5Q5"
+const DOC_API_URL = "https://67a08egpff.execute-api.us-east-2.amazonaws.com/test/upload?action=list"
+
+app.get('/api/files', async (req, res) => {
+  try {
+    const response = await axios.post(DOC_API_URL, {}, {
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': DOC_API_KEY,
+      },
+    });
+
+    // Send the response back to the frontend
+    const files = JSON.parse(response.data.body);
+    res.json(files);  // Respond with the list of files
+  } catch (error) {
+    console.error('Error fetching files:', error);
+    res.status(500).json({ error: 'Failed to fetch files' });
+  }
 });
+
+//NOTE: Client side implementation
+//const file = await client.files.create({
+    //file: fs.createReadStream("SSR_TSRPT.pdf"),
+    //file: fs.createReadStream(uploadPath.toString()),
+    //purpose: "user_data",
+//});
 
 // Chat functionality
 io.on('connection', (socket) => {
   console.log('a user connected');
   socket.on('chat message', async (msg) => {
-    const API_URL = "https://67a08egpff.execute-api.us-east-2.amazonaws.com/test/upload";
-    const API_KEY = "N0I50xLGdz9LmOpHw32th8aN0nLnhhxW1vKLG5Q5";
+    const API_URL = "https://rgo89zwyke.execute-api.us-east-2.amazonaws.com/dev/ask";
+    const CHAT_API_KEY = "MqwABFGNhC4FF1Kqu2otv7ElRos1DbuS1FCkfuJx";
     console.log('message:' + msg);
     io.emit('chat message', "Me: " + msg);
 
@@ -81,7 +105,7 @@ io.on('connection', (socket) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': API_KEY
+          'x-api-key': CHAT_API_KEY
         },
         body: JSON.stringify({query: msg})
       });
