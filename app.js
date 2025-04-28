@@ -60,7 +60,8 @@ app.post('/upload', function(req, res) {
 let uploadPath;
 console.log(uploadPath)
 
-//Trying the file upload info 
+//Trying the file upload info -- move and generalize later https://platform.openai.com/docs/guides/pdf-file
+
 const DOC_API_KEY = "N0I50xLGdz9LmOpHw32th8aN0nLnhhxW1vKLG5Q5"
 const DOC_API_URL = "https://67a08egpff.execute-api.us-east-2.amazonaws.com/test/upload?action=list"
 
@@ -81,6 +82,19 @@ app.get('/api/files', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch files' });
   }
 });
+
+async function uploadFile(file) {
+  const upload = await axios.post("https://67a08egpff.execute-api.us-east-2.amazonaws.com/test/upload?action=upload", {
+    method: 'POST',
+    headers: {
+      'Content-Type': file.type,
+      'x-api-key': DOC_API_KEY,
+      'filename': file.name
+    },
+    body: file
+  })
+}
+
 
 //NOTE: Client side implementation
 //const file = await client.files.create({
