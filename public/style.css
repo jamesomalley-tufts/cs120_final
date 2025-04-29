@@ -32,12 +32,18 @@ header {
     margin-right: 10px;
 }
 
+nav {
+    display: flex;
+    align-items: center;
+}
+
 nav a {
     color: white;
     text-decoration: none;
     margin: 0 15px;
     font-weight: 600;
     font-size: 18px;
+    margin-right: 15px;
 }
 
 nav a:hover {
@@ -173,4 +179,20 @@ input, select {
 .dark-mode #modalContent {
     background: #333;
     color: #f1f1f1;
+}
+
+.dark-mode-toggle {
+    background: none;
+    border: 2px solid white;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.dark-mode-toggle:hover {
+    background-color: white;
+    color: #004080;
 }
