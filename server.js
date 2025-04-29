@@ -12,12 +12,12 @@ const server = http.createServer(app);
 const io = new Server(server);
 
 // Connect to MongoDB
-mongoose.connect('mongodb+srv://hoamuser:test@cluster0.48rowfg.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', {
+mongoose.connect('mongodb+srv://hoamuser:test@cluster0.48rowfg.mongodb.net/hoam?retryWrites=true&w=majority&appName=Cluster0', {
     useNewUrlParser: true,
     useUnifiedTopology: true
 })
-.then(() => console.log('Connected to MongoDB!'))
-.catch(err => console.error('MongoDB connection error:', err));
+.then(() => console.log('Connected to MongoDB Atlas!'))
+.catch(err => console.error('MongoDB Atlas connection error:', err));
 
 // User schema (password plain text for now)
 const userSchema = new mongoose.Schema({
