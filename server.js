@@ -5,6 +5,9 @@ const mongoose = require('mongoose');
 const http = require('http');
 const { Server } = require('socket.io');
 const app = express();
+app.use(express.json()); // Parse application/json
+app.use(express.urlencoded({ extended: true })); // Parse application/x-www-form-urlencoded
+
 const server = http.createServer(app);
 const io = new Server(server);
 
