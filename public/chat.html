@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Chat | Hoam.ai</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <script src="/socket.io/socket.io.js"></script> <!-- socket.io client -->
     <script src="app.js" defer></script>
 </head>
@@ -18,7 +19,10 @@
 </div>
 
 <header>
-    <div>Hoam.ai</div>
+    <div class="logo-title">
+        <img src="logo.png" alt="Hoam.ai Logo" class="logo">
+        Hoam.ai
+    </div>
     <nav>
         <a href="index.html">Home</a>
         <a href="about.html">Why Hoam.ai</a>
@@ -34,7 +38,7 @@
         <!-- Messages will appear here -->
     </div>
 
-    <div class="chat-input">
+    <div class="chat-input" style="margin-top: 10px;">
         <input id="chatInput" type="text" placeholder="Type a message..." required>
         <button onclick="sendMessage()">Send</button>
     </div>
