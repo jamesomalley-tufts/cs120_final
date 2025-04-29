@@ -59,9 +59,12 @@ app.post('/upload', upload.single('document'), (req, res) => {
 
 //register
 app.post('/register', async (req, res) => {
+    console.log('Incoming Registration Data:', req.body); // DEBUG LOGGING
+
     const { name, email, address, password } = req.body;
     try {
         const existingUser = await User.findOne({ email });
+
         if (existingUser) {
             return res.status(400).send('User already exists.');
         }
@@ -70,13 +73,15 @@ app.post('/register', async (req, res) => {
             name,
             email,
             address,
-            password  // store plain password (NOT hashed)
+            password
         });
 
-        await newUser.save();
+        await newUser.save(); // Save new user
+
+        console.log('New User Saved:', email); // DEBUG LOGGING
         res.send('Success');
     } catch (error) {
-        console.error(error);
+        console.error('Registration error:', error); // ✅ PROPER ERROR LOGGING
         res.status(500).send('Registration failed.');
     }
 });
