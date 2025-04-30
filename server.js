@@ -8,7 +8,7 @@ import { Server } from 'socket.io';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import axios from 'axios';
-Import OpenAI from 'openai';
+import OpenAI from 'openai';
 import dotenv from 'dotenv';
 dotenv.config();
 const client = new OpenAI({
