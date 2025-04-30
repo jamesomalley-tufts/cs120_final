@@ -92,23 +92,47 @@ function handleLogin(event) {
 }
 
 // ---------- Chat (socket.io) ----------
-let socket;
-function initializeChat() {
-    socket = io();
-    socket.on('chat message', function(msg) {
-        const chatBox = document.getElementById("chatBox");
-        const msgElement = document.createElement("div");
-        msgElement.textContent = msg;
-        chatBox.appendChild(msgElement);
-        chatBox.scrollTop = chatBox.scrollHeight;
-    });
-}
+const socket = io();
 
-function sendMessage() {
-    const input = document.getElementById("chatInput");
-    const message = input.value.trim();
-    if (message && socket) {
-        socket.emit('chat message', message);
-        input.value = "";
+      const form = document.getElementById('form');
+      const input = document.getElementById('input');
+      const messages = document.getElementById('messages');
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (input.value) {
+          socket.emit('chat message', input.value);
+          input.value = '';
+        }
+      });
+
+      socket.on('chat message', (msg) => {
+        const item = document.createElement('li');
+        item.innerText = msg;
+        messages.appendChild(item);
+        //added to show LLM response
+        window.scrollTo(0, document.body.scrollHeight);
+      });
+
+async function loadFileList() {
+    try {
+    const fileList = await fetch('/api/files');
+
+    if (!fileList.ok) {
+      throw new Error(`HTTP error! status: ${fileList.status}`);
     }
+
+    const files = await fileList.json();
+    console.log(files);
+
+    files.forEach(file => {
+      const li = document.createElement('li');
+      li.textContent = file.filename;
+      document.getElementById('listFiles').appendChild(li);
+      console.log(file.filename);
+    });
+  } catch (error) {
+    console.error('error loading file ', error)
+  }
 }
+loadFileList();
