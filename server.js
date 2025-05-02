@@ -8,12 +8,15 @@ import { Server } from 'socket.io';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import axios from 'axios';
-import OpenAI from 'openai';
+
+import OpenAI from "openai";
 import dotenv from 'dotenv';
+import fetch from "node-fetch";
 dotenv.config();
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY, // Environment variable, don't paste the full key directly here
 });
+
 
 // Setup __dirname manually for ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -47,11 +50,13 @@ const upload = multer({ storage: multer.memoryStorage() });
 const FILE_API_URL = "https://67a08egpff.execute-api.us-east-2.amazonaws.com/test/upload";
 const FILE_API_KEY = "N0I50xLGdz9LmOpHw32th8aN0nLnhhxW1vKLG5Q5";
 
+
 // Middleware
 app.use(cors());
 app.use(express.static('public')); 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
 
 // Pages
 app.get('/', (req, res) => {
@@ -86,16 +91,33 @@ app.post('/upload', upload.any(), async (req, res) => {
 });
 
 // List uploaded files
-app.get('/api/files', (req, res) => {
-    fs.readdir('uploads', (err, files) => {
-        if (err) {
-            console.error('Failed to list uploaded files:', err);
-            return res.status(500).json({ error: 'Failed to list files' });
-        }
-        const formattedFiles = files.map(filename => ({ filename }));
-        res.json(formattedFiles);
+//app.get('/api/files', (req, res) => {
+  //  fs.readdir('uploads', (err, files) => {
+    //    if (err) {
+      //      console.error('Failed to list uploaded files:', err);
+        //    return res.status(500).json({ error: 'Failed to list files' });
+        //}
+        //const formattedFiles = files.map(filename => ({ filename }));
+        //res.json(formattedFiles);
+    //});
+//});
+
+app.get('/api/files', async (req, res) => {
+  try {
+    const response = await axios.post("https://67a08egpff.execute-api.us-east-2.amazonaws.com/test/upload?action=list", {}, {
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': FILE_API_KEY,
+      },
     });
+
+    const files = JSON.parse(response.data.body);
+    res.json(files);
+  } catch (error) {
+    console.error('Error fetching files:', error);
+  }
 });
+
 
 // Register
 app.post('/register', async (req, res) => {
@@ -168,8 +190,7 @@ io.on('connection', (socket) => {
           io.emit('chat message', "The AI didn't provide a valid text response.");
         }
 
-      io.emit('chat message', llm_response.output_text());
-      console.log('LLM response', llm_response.output_text())
+      console.log('LLM response', llm_response.output_text)
       } catch (error) {
       console.error("Error generating content" + error);
     }
