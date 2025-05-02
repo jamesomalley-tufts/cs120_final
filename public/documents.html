@@ -5,7 +5,6 @@
     <title>My Documents | Hoam.ai</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-    <script src="app.js" defer></script>
 </head>
 <body>
 
@@ -34,21 +33,18 @@
 
     <div class="upload-section">
         <h2>Upload a New Document</h2>
-        <form onsubmit="handleUpload(event)" enctype="multipart/form-data">
-            <input type="file" name="document" required>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" id="fileInput" name="file" required>
             <button type="submit">Upload</button>
         </form>
     </div>
 
     <div class="documents-list">
         <h2>Documents</h2>
-        <ul>
-            <li>Document 1</li>
-            <li>Document 2</li>
-            <li>Document 3</li>
-        </ul>
+        <ul id="listFiles"></ul>
     </div>
 </div>
-
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="client.js" defer></script>
 </body>
 </html>
